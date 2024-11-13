@@ -9,5 +9,9 @@
 
 #ifndef PPARSER_PARSER_H
 #define PPARSER_PARSER_H
+#include "../include/ast.h"
+#include "../include/pparser_lexer.h"
+
+ast_program_t program_parser(ppl_t *l);
 
 #endif // PPARSER_PARSER_H

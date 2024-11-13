@@ -38,5 +38,6 @@ const char *human_token_kind(int kind);
 void dump_token(token_t token);
 ppl_t new_ppl(void);
 token_t pparser_lexer_next(ppl_t *l);
+token_t pparser_peek(ppl_t *l);
 
 #endif // PPARSER_LEXER_H

@@ -5,7 +5,9 @@
  * Paul Passeron <paul.passeron2@gmail.com>
  */
 
+#include "../include/ast.h"
 #include "../include/pparser_lexer.h"
+#include "../include/pparser_parser.h"
 #include "../include/string_view.h"
 #include <stdio.h>
 #include <stdlib.h>
@@ -21,13 +23,17 @@ int main(void) {
   ppl.l.remaining = s;
   fclose(f);
   ppl.l.current_loc = (location_t){"unilang.ppars", 1, 1, 0};
-  while (!is_next(&ppl.l)) {
-    token_t tok = pparser_lexer_next(&ppl);
-    dump_token(tok);
-    printf("\n");
-    fflush(stdout);
-  }
 
+  // ppl_t cpy = ppl;
+  // while (!is_next(&cpy.l)) {
+  //   token_t tok = pparser_lexer_next(&cpy);
+  //   dump_token(tok);
+  //   printf("\n");
+  //   fflush(stdout);
+  // }
+  ast_program_t prog = program_parser(&ppl);
+
+  printf("Prog count: %ld\n", prog.rules_count);
   free(s.contents);
   return 0;
 }

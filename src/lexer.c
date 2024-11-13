@@ -163,7 +163,7 @@ token_t next(lexer_t *l) {
       continue;
   }
 
-  print_error(stderr, l, SV("[Syntax Error] No rule matching"));
+  // print_error(stderr, l, SV("[Syntax Error] No rule matching"));
   return error_token();
 }
 

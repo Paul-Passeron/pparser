@@ -29,6 +29,7 @@ lexer_t new_pparser_lexer() {
   add_skip_rule_to_lexer(&l, SV("\b"));
   add_skip_rule_to_lexer(&l, SV("/\\**\\*/"));
   add_bad_rule_to_lexer(&l, SV("/\\*"), SV("Unmatched multi-line comment."));
+  add_bad_rule_to_lexer(&l, SV("*"), SV("No rule."));
   return l;
 }
 
@@ -117,4 +118,9 @@ const char *human_token_kind(int kind) {
 void dump_token(token_t token) {
   print_location_t(stdout, token.location);
   printf("\'" SF "\' %s", SA(token.lexeme), human_token_kind(token.kind));
+}
+
+token_t pparser_peek(ppl_t *l) {
+  ppl_t cpy = *l;
+  return pparser_lexer_next(&cpy);
 }

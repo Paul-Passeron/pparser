@@ -78,4 +78,3 @@ stmt_list:
       stmts[1] = NULL;
       return stmts;
     }
-    
