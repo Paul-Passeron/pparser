@@ -1,9 +1,25 @@
+{
+  // Unilang Parser !
+  #include <stdio.h>
+  #include "../Unilang/include/unilang_lexer.h"
 
-identifier: {IDENTIFIER} => { return new_identifier({0}); }
+  typedef void * ast_t;
+  
+  void *new_identifier(token_t);
+  void *new_fundef(ast_t name, ast_t *params, ast_t type, size_t param_count, ast_t *stmts, size_t stmt_count);
+
+}
+
+
+identifier: {IDENTIFIER} => { 
+  token_t *tok = %{0%};
+  token_t res = *tok;
+  free(tok);
+  return new_identifier(res); }
 
 fundef: 'let' %identifier '(' %param_list ')'  ':' %type '=>' '{' %stmt_list '}' => {
   ast_t iden = %{1%};
-  ast_t type = %{6%}
+  ast_t type = %{6%};
   ast_t *params = %{3%};
   size_t param_count = 0;
   while(params[param_count++]);
@@ -12,6 +28,23 @@ fundef: 'let' %identifier '(' %param_list ')'  ':' %type '=>' '{' %stmt_list '}'
   while(stmts[stmt_count++]);
   return new_fundef(iden, params, type, param_count, stmts, stmt_count);
 }
+
+type: %identifier => {return %{0%};}
+
+decl: %fundef => {return %{0%};}
+
+lit: {INTLIT} => { return new_int_lit(%{0%}); }
+
+expr: 
+  | %identifier => {
+      return %{0%};
+    }
+  | '(' %expr ')' => {
+      return %{1%};
+    }
+  | %lit => {
+      return %{0%};
+    }
 
 param_list:
   | %identifier ':' %type ',' %param_list => {

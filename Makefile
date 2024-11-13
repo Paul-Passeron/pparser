@@ -5,7 +5,7 @@ SRC=src/
 BUILD=build/
 BIN=bin/
 
-DEPS=  $(BUILD)pparser.o $(BUILD)parser.o $(BUILD)lexer.o $(BUILD)string_view.o $(BUILD)regexp.o $(BUILD)pparser_lexer.o $(BUILD)pparser_parser.o
+DEPS=  $(BUILD)pparser.o $(BUILD)parser.o $(BUILD)lexer.o $(BUILD)string_view.o $(BUILD)regexp.o $(BUILD)pparser_lexer.o $(BUILD)pparser_parser.o $(BUILD)generator.o
 all: init lines pparser
 lines:
 	@echo "C:"

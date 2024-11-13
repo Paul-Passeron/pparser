@@ -34,6 +34,7 @@ typedef struct ast_rule_t {
 } ast_rule_t;
 
 typedef struct ast_program_t {
+  string_view_t preambule;
   ast_rule_t *rules;
   size_t rules_count;
 } ast_program_t;

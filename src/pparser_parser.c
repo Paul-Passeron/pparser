@@ -94,6 +94,7 @@ ast_rule_candidate_t candidate_parser(ppl_t *l) {
     res_elems[i] = elems[i];
   }
   res.elems = res_elems;
+
   res.elems_count = elems_count;
 
   tok = pparser_lexer_next(l);
@@ -132,6 +133,7 @@ ast_rule_candidate_t candidate_parser(ppl_t *l) {
                    "after rule candidate"));
     exit(1);
   }
+
   return res;
 }
 
@@ -166,6 +168,7 @@ ast_rule_t rule_parser(ppl_t *l) {
   int n_candidates = 0;
   if (tok.kind != VERT) {
     ast_rule_candidate_t candidate = candidate_parser(l);
+
     candidates[n_candidates++] = candidate;
   }
 
@@ -173,6 +176,7 @@ ast_rule_t rule_parser(ppl_t *l) {
     tok = pparser_lexer_next(l);
 
     ast_rule_candidate_t candidate = candidate_parser(l);
+    // printf("ELEMS_COUNT IS %ld\n", candidate.elems_count);
     candidates[n_candidates++] = candidate;
     tok = pparser_peek(l);
     // printf("TOK.KIND IS %s\n", human_token_kind(tok.kind));
@@ -186,25 +190,45 @@ ast_rule_t rule_parser(ppl_t *l) {
     res_candidates[i] = candidates[i];
   }
   res.candidates = res_candidates;
+
   res.candidates_count = n_candidates;
   return res;
 }
 
 ast_program_t program_parser(ppl_t *l) {
   ast_program_t res = {0};
+
+  token_t tok = pparser_peek(l);
+  if (tok.kind == OPEN_BRA) {
+    tok = pparser_lexer_next(l);
+    tok = pparser_lexer_next(l);
+    if (tok.kind != CODE) {
+      printf("Expected preambule code after open bracket\n");
+      exit(1);
+    }
+    string_view_t preambule = tok.lexeme;
+    tok = pparser_lexer_next(l);
+    if (tok.kind != CLOSE_BRA) {
+      printf("Expected close bracket after preambule code\n");
+      exit(1);
+    }
+    res.preambule = preambule;
+  }
   size_t rules_cap = 16;
   size_t rules_count = 0;
   ast_rule_t *rules = malloc(rules_cap * sizeof(ast_rule_t));
   while (!is_next(&l->l)) {
     ast_rule_t r = rule_parser(l);
+
     if (rules_cap == rules_count) {
+      rules = realloc(rules, rules_cap * 2 * sizeof(ast_rule_t));
       rules_cap *= 2;
-      rules = realloc(rules, rules_cap * sizeof(ast_rule_t));
     }
     rules[rules_count++] = r;
   }
   rules = realloc(rules, rules_count * sizeof(ast_rule_t));
   res.rules = rules;
   res.rules_count = rules_count;
+
   return res;
 }
