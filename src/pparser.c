@@ -12,6 +12,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+float test() { return 7.2f; }
+
 int main(void) {
   ppl_t ppl = new_ppl();
   FILE *f = fopen("unilang.ppars", "r");
@@ -31,9 +33,11 @@ int main(void) {
   //   printf("\n");
   //   fflush(stdout);
   // }
+
   ast_program_t prog = program_parser(&ppl);
 
   printf("Prog count: %ld\n", prog.rules_count);
   free(s.contents);
+
   return 0;
 }

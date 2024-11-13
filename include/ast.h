@@ -10,10 +10,6 @@
 
 #include "lexer.h"
 
-typedef struct ast_t ast_t;
-
-typedef enum ast_kind_t { AST_IDENTIFIER } ast_kind_t;
-
 typedef enum ast_elem_kind_t {
   EK_RULE,
   EK_KIND,
@@ -41,17 +37,5 @@ typedef struct ast_program_t {
   ast_rule_t *rules;
   size_t rules_count;
 } ast_program_t;
-
-typedef union ast_as_t {
-  ast_elem_t elem;
-  ast_rule_candidate_t rule_candidate;
-  ast_rule_t rule;
-  ast_program_t program;
-} ast_as_t;
-
-struct ast_t {
-  ast_kind_t kind;
-  ast_as_t as;
-};
 
 #endif // AST_H

@@ -195,7 +195,6 @@ ast_program_t program_parser(ppl_t *l) {
   size_t rules_cap = 16;
   size_t rules_count = 0;
   ast_rule_t *rules = malloc(rules_cap * sizeof(ast_rule_t));
-
   while (!is_next(&l->l)) {
     ast_rule_t r = rule_parser(l);
     if (rules_cap == rules_count) {
