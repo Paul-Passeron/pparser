@@ -11,6 +11,8 @@
 
 void generate_parser_header(FILE *f, ast_program_t prog) {
   string_view_t rules[1024] = {0};
+  fprintf(f, "#ifndef PPARSER_H\n");
+  fprintf(f, "#define PPARSER_H\n");
   fprintf(f, "#include \"lexer.h\"\n");
   fprintf(f, "#include <stdlib.h>\n");
   fprintf(f, "// PREAMBULE:\n" SF "\n", SA(prog.preambule));
@@ -30,14 +32,8 @@ void generate_parser_header(FILE *f, ast_program_t prog) {
     }
     fprintf(f, "void *parse_" SF "(lexer_t *l, int *worked);\n\n",
             SA(rules[i]));
-
-    // ast_rule_t rule = prog.rules[i];
-    //   for (size_t j = 0; j < rule.candidates_count; j++) {
-    //     // ast_rule_candidate_t candidate = rule.candidates[j];
-    //     fprintf(f, "void *parse_" SF "_c%ld(lexer_t *l, int *worked);\n\n",
-    //             SA(rules[i]), j);
-    //   }
   }
+  fprintf(f, "#endif // PPARSER_H\n");
 }
 
 void generate_parser_src(FILE *f, string_view_t name, ast_program_t prog) {
