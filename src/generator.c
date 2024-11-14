@@ -7,10 +7,11 @@
 
 #include "../include/generator.h"
 #include <stdlib.h>
+#include <string.h>
 
 void generate_parser_header(FILE *f, ast_program_t prog) {
   string_view_t rules[1024] = {0};
-  fprintf(f, "#include \"include/lexer.h\"\n");
+  fprintf(f, "#include \"lexer.h\"\n");
   fprintf(f, "#include <stdlib.h>\n");
   fprintf(f, "// PREAMBULE:\n" SF "\n", SA(prog.preambule));
   fprintf(f, "token_t *parse_token_lexeme(lexer_t *l, int *worked, "
@@ -42,8 +43,7 @@ void generate_parser_header(FILE *f, ast_program_t prog) {
 void generate_parser_src(FILE *f, string_view_t name, ast_program_t prog) {
   string_view_t rules[1024] = {0};
   bool must_fail = false;
-  fprintf(f, "#include \"" SF ".h\"\n", SA(name));
-
+  fprintf(f, "#include \"../" SF "\"\n", SA(name));
   fprintf(f, "token_t *parse_token_lexeme(lexer_t *l, int *worked, "
              "string_view_t lexeme) {\n");
   fprintf(f, "token_t tok = next(l);\n");
@@ -107,10 +107,40 @@ void generate_parser_src(FILE *f, string_view_t name, ast_program_t prog) {
       fprintf(f, "void *parse_" SF "_c%ld(lexer_t *l, int *worked){\n",
               SA(rules[i]), j);
       fprintf(f, "*worked = 0;\n");
-      fprintf(f, "void *rule_res = NULL;\n");
-      fprintf(f, "lexer_t rule_cpy = *l;\n");
+      char *used = malloc(sizeof(int) * candidate.elems_count);
+      memset(used, 0, sizeof(int) * candidate.elems_count);
+      for (size_t k = 0; k < candidate.action.length; k++) {
+        char c = candidate.action.contents[k];
+        if (c != '%')
+          continue;
+        c = candidate.action.contents[++k];
+        char next = candidate.action.contents[++k];
+        if (c == '{') {
+          char buffer[1024] = {0};
+          int cter = 0;
+          c = next;
+          next = candidate.action.contents[++k];
+          while (c != '%' && next != '}') {
+            buffer[cter++] = c;
+            c = next;
+            next = candidate.action.contents[++k];
+          }
+          size_t res = atoi(buffer);
+          if (res >= candidate.elems_count) {
+            printf("Bad element in candidate n°%ld of rule " SF ": %ld\n",
+                   j + 1, SA(rule.name), res);
+            exit(1);
+          }
+          used[res] = 1;
+        }
+      }
+
       for (size_t k = 0; k < candidate.elems_count; k++) {
-        fprintf(f, "void *elem_%ld = ", k);
+        if (used[k]) {
+          fprintf(f, "void *elem_%ld = ", k);
+        } else {
+          fprintf(f, "free(");
+        }
         ast_elem_t elem = candidate.elems[k];
         if (elem.kind == EK_KIND) {
           fprintf(f, "parse_token_kind(l, worked, " SF ")", SA(elem.rule));
@@ -132,30 +162,36 @@ void generate_parser_src(FILE *f, string_view_t name, ast_program_t prog) {
           }
           fprintf(f, "parse_" SF "(l, worked)", SA(elem.rule));
         }
-        fprintf(f, ";\n");
+        if (!used[k]) {
+          fprintf(f, ")");
+        }
+        fprintf(f, ";\nif(!*worked){\nreturn NULL;\n}\n");
       }
+
       for (size_t k = 0; k < candidate.action.length; k++) {
         char c = candidate.action.contents[k];
         if (c != '%') {
           fprintf(f, "%c", c);
           continue;
         }
-        char buffer[1024] = {0};
-        int cter = 0;
         c = candidate.action.contents[++k];
         char next = candidate.action.contents[++k];
+
         if (c == '{') {
+          char buffer[1024] = {0};
+          int cter = 0;
+          c = next;
+          next = candidate.action.contents[++k];
           while (c != '%' && next != '}') {
-            k++;
             buffer[cter++] = c;
             c = next;
-            next = candidate.action.contents[k];
+            next = candidate.action.contents[++k];
           }
-          // k++;
-          int res = atoi(buffer);
-          fprintf(f, "elem_%d", res);
+          size_t res = atoi(buffer);
+          fprintf(f, "elem_%ld", res);
         }
       }
+
       fprintf(f, "}\n");
     }
   }

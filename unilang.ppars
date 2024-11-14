@@ -1,0 +1,113 @@
+{
+  // Unilang Parser !
+  #include <stdio.h>
+  #include "../Unilang/include/unilang_lexer.h"
+
+  typedef void * ast_t;
+  
+  void *new_identifier(token_t);
+  void *new_fundef(ast_t name, ast_t *params, ast_t type, size_t param_count, ast_t *stmts, size_t stmt_count);
+
+}
+
+
+identifier: {IDENTIFIER} => { 
+  token_t *tok = %{0%};
+  token_t res = *tok;
+  free(tok);
+  return new_identifier(res); }
+
+fundef: 'let' %identifier '(' %param_list ')'  ':' %type '=>' '{' %stmt_list '}' => {
+  ast_t iden = %{1%};
+  ast_t type = %{6%};
+  ast_t *params = %{3%};
+  size_t param_count = 0;
+  while(params[param_count++]);
+  ast_t *stmts = %{8%};
+  size_t stmt_count = 0;
+  while(stmts[stmt_count++]);
+  return new_fundef(iden, params, type, param_count, stmts, stmt_count);
+}
+
+type: %identifier => {return %{0%};}
+
+decl: %fundef => {return %{0%};}
+
+lit: {INTLIT} => { return new_int_lit(%{0%}); }
+
+expr: 
+  | %identifier => {
+      return %{0%};
+    }
+  | '(' %expr ')' => {
+      return %{1%};
+    }
+  | %lit => {
+      return %{0%};
+    }
+
+param_list:
+  | %identifier ':' %type ',' %param_list => {
+      ast_t param = new_param(%{0%}, %{2%});
+      ast_t *params = %{4%};
+      size_t param_count = 0;
+      while(params[param_count++]);
+      ast_t *res = malloc(sizeof(ast_t) * (param_count + 2));
+      res[0] = param;
+      for(int i = 0; i < param_count; i++) res[i + 1] = params[i];
+      res[param_count + 1] = NULL;
+      return res;
+    }
+  | %identifier ':' %type ',' => {
+      ast_t param = new_param(%{0%}, %{2%});
+      ast_t *params = malloc(sizeof(ast_t) * 2);
+      params[0] = param;
+      params[1] = NULL;
+      return params;
+    }
+  | %identifier ':' %type => {
+      ast_t param = new_param(%{0%}, %{2%});
+      ast_t *params = malloc(sizeof(ast_t) * 2);
+      params[0] = param;
+      params[1] = NULL;
+      return params;
+    }
+  | => {
+      ast_t *params = malloc(sizeof(ast_t) * 1);
+      params[0] = NULL;
+      return params;
+    }
+
+compound_stmt: '{' %stmt_list '}' => {
+  ast_t *stmts = %{1%};
+  size_t stmt_count = 0;
+  while(stmts[stmt_count++]);
+  return new_compound_stmt(stmts, stmt_count);
+}
+
+stmt:
+  | %decl => {return %{0%};}
+  | %expr ';' => {return %{0%};}
+  | %compound_stmt => {return %{1%};}
+
+stmt_list:
+  | %stmt %stmt_list => {
+      ast_t stmt = %{0%};
+      ast_t *stmts = %{1%};
+      size_t stmt_count = 0;
+      while(stmts[stmt_count++]);
+      ast_t *res = malloc(sizeof(ast_t) (stmt_count + 2));
+      res[0] = stmt;
+      for(int i = 0; i < stmt_count; i++){
+        res[i+1] = stmts[i];
+      }
+      free(stmts);
+      res[stmt_count + 1] = NULL;
+      return res;
+    }
+  | %stmt => {
+      ast_t *stmts = malloc(sizeof(ast_t) * 2);
+      stmts[0] = %{1%};
+      stmts[1] = NULL;
+      return stmts;
+    }
