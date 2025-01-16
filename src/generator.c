@@ -114,7 +114,7 @@ void generate_parser_src(FILE *f, string_view_t name, ast_program_t prog) {
               rule.l.has_sep ? "" : "*l = old;\n");
       fprintf(f, "if (count + 1 >= cap){\n");
       fprintf(f, "cap += 16;\n");
-      fprintf(f, "void **temp = realloc(elem, cap * sizeof(void*));\n");
+      fprintf(f, "void **temp = realloc(elems, cap * sizeof(void*));\n");
       fprintf(f, "if(!temp) {\n");
       fprintf(f, "free(elems);\n");
       fprintf(f, "perror(\"Reallocation failed\");\n");
