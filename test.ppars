@@ -3,46 +3,11 @@
   #include "toylang_lexer.h"
 }
 
-
-let: 'let' {IDENTIFIER} '=' %expr => {
-  token_t *name_ptr = %{1%};
-  token_t name = *name_ptr;
-  free(name_ptr);
-  ast_t *expr_ptr = %{3%};
-  return new_let(name, expr_ptr);
-}
-
-leaf:
-  | {INTLIT} => {
-      token_t *lit_ptr = %{0%};
-      token_t lit = *lit_ptr;
-      free(lit_ptr);
-      return new_intlit(lit);
-    }
-  | {IDENTIFIER} => {
+identifier: {IDENTIFIER} => {
       token_t *lit_ptr = %{0%};
       token_t lit = *lit_ptr;
       free(lit_ptr);
       return new_identifier(lit);
   }
 
-expr: 
-  | %leaf '+' %leaf => {
-      ast_t *lh = %{0%};
-      ast_t *rh = %{2%};
-      token_t *op_ptr = %{1%};
-      token_t op = *op_ptr;
-      free(op_ptr);
-      return new_binop(op, l, r);
-    }
-  | %leaf '*' %leaf => {
-      ast_t *lh = %{0%};
-      ast_t *rh = %{2%};
-      token_t *op_ptr = %{1%};
-      token_t op = *op_ptr;
-      free(op_ptr);
-      return new_binop(op, l, r);
-    }
-  | %leaf => {
-      return %{0%};
-    }
+idlist: @list elem = %identifier separator = ';'

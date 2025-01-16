@@ -25,6 +25,8 @@ typedef enum token_kind_t {
   COLON,
   VERT, // |
   CODE,
+  DIRECTIVE,
+  EQ,
 } token_kind_t;
 
 typedef struct ppl_t {

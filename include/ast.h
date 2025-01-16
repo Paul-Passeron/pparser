@@ -21,6 +21,12 @@ typedef struct ast_elem_t {
   string_view_t rule;
 } ast_elem_t;
 
+typedef struct ast_list_t {
+  int has_sep;
+  ast_elem_t elem;
+  ast_elem_t sep;
+} ast_list_t;
+
 typedef struct ast_rule_candidate_t {
   ast_elem_t *elems;
   size_t elems_count;
@@ -29,6 +35,8 @@ typedef struct ast_rule_candidate_t {
 
 typedef struct ast_rule_t {
   string_view_t name;
+  bool is_list;
+  ast_list_t l;
   ast_rule_candidate_t *candidates;
   size_t candidates_count;
 } ast_rule_t;

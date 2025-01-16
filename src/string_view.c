@@ -30,24 +30,19 @@ char *sv_to_cstr(string_view_t s) {
 
 bool sv_matches_exact(string_view_t pattern, string_view_t string,
                       string_view_t *rest) {
-  char pat[1024] = {0};
+  char *pat = malloc(pattern.length + 1);
   memcpy(pat, pattern.contents, pattern.length);
-  char str_backup[1024] = {0};
-  char *str = str_backup;
-  bool should_free = false;
-  if (string.length > 1024) {
-    str = malloc(string.length + 1);
-    should_free = true;
-  }
+  pat[pattern.length] = 0;
+  char *str = malloc(string.length + 1);
   memcpy(str, string.contents, string.length);
   str[string.length] = 0;
+
   char *r;
   bool res = matches_exact(pat, str, &r);
   int l = strlen(r);
   *rest = (string_view_t){string.contents + (r - str), l};
-  if (should_free) {
-    free(str);
-  }
+  free(str);
+  free(pat);
   return res;
 }
 
@@ -64,10 +59,12 @@ string_view_t from_file(FILE *f) {
   fseek(f, 0, SEEK_END);
   long size = ftell(f);
   fseek(f, 0, SEEK_SET);
-  char *str = malloc(size + 1);
+  char *str = malloc(size + 2);
   fread(str, 1, size, f);
   fseek(f, current, SEEK_SET);
-  return (string_view_t){str, size};
+  str[size] = '\n';
+  str[size + 1] = 0;
+  return (string_view_t){str, size + 1};
 }
 
 bool sv_eq(string_view_t a, string_view_t b) {

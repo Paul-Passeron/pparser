@@ -39,9 +39,18 @@ int main(int argc, char *argv[]) {
   }
 
   string_view_t s = from_file(f);
+
   ppl.l.remaining = s;
   fclose(f);
   ppl.l.current_loc = (location_t){input_file, 1, 1, 0};
+
+  // ppl_t cpy = ppl;
+  // token_t tok = pparser_lexer_next(&cpy);
+  // while (!is_error_tok(tok)) {
+  //   dump_token(tok);
+  //   printf("\n");
+  //   tok = pparser_lexer_next(&cpy);
+  // }
 
   ast_program_t prog = program_parser(&ppl);
 

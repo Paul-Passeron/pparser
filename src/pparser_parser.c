@@ -164,7 +164,59 @@ ast_rule_t rule_parser(ppl_t *l) {
     printf("Could not parse rule.\n");
     exit(1);
   }
+  if (tok.kind == DIRECTIVE) {
+    res.is_list = 1;
+    if (!sv_eq(tok.lexeme, SV("@list"))) {
+      printf("This is: " SF "\n", SA(tok.lexeme));
+      printf("Only @list is supported for now: \n");
+      exit(1);
+    }
+
+    (void)pparser_lexer_next(l);
+    tok = pparser_lexer_next(l);
+    if (is_error_tok(tok)) {
+      printf("no more\n");
+      exit(1);
+    }
+    if (!sv_eq(tok.lexeme, SV("elem"))) {
+      printf("No elem in @list");
+      exit(1);
+    }
+    tok = pparser_lexer_next(l);
+    if (is_error_tok(tok)) {
+      printf("no more\n");
+      exit(1);
+    }
+    if (tok.kind != EQ) {
+      printf("Expected = after elem in @list\n");
+      exit(1);
+    }
+    ast_elem_t elem = elem_parser(l);
+    res.l.elem = elem;
+    ppl_t old = *l;
+    tok = pparser_lexer_next(l);
+    int sep = 1;
+    if (!sv_eq(tok.lexeme, SV("separator"))) {
+      sep = 0;
+      *l = old;
+    }
+    if (sep) {
+      tok = pparser_lexer_next(l);
+      if (is_error_tok(tok)) {
+        printf("no more\n");
+        exit(1);
+      }
+      if (tok.kind != EQ) {
+        printf("Expected = after separator in @list\n");
+        exit(1);
+      }
+      res.l.sep = elem_parser(l);
+    }
+    res.l.has_sep = sep;
+    return res;
+  }
   ast_rule_candidate_t candidates[1024] = {0};
+
   int n_candidates = 0;
   if (tok.kind != VERT) {
     ast_rule_candidate_t candidate = candidate_parser(l);
@@ -176,10 +228,8 @@ ast_rule_t rule_parser(ppl_t *l) {
     tok = pparser_lexer_next(l);
 
     ast_rule_candidate_t candidate = candidate_parser(l);
-    // printf("ELEMS_COUNT IS %ld\n", candidate.elems_count);
     candidates[n_candidates++] = candidate;
     tok = pparser_peek(l);
-    // printf("TOK.KIND IS %s\n", human_token_kind(tok.kind));
     if (is_error_tok(tok)) {
       break;
     }

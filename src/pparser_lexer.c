@@ -15,14 +15,17 @@ lexer_t new_pparser_lexer() {
   add_rule_to_lexer(&l, SV("|"), VERT);
   add_rule_to_lexer(&l, SV("\'*\'"), STRLIT);
   add_bad_rule_to_lexer(&l, SV("\'"), SV("Unmatched string literal start."));
+  add_rule_to_lexer(&l, SV("@[a-zA-Z_-_]([a-zA-Z_-_0-9])"), DIRECTIVE);
   add_rule_to_lexer(&l, SV("[a-zA-Z_-_]([a-zA-Z_-_0-9])"), IDENTIFIER);
   add_rule_to_lexer(&l, SV("%[a-zA-Z_-_]([a-zA-Z_-_0-9])"), RULE);
   add_rule_to_lexer(&l, SV("[0-9]([0-9])"), INTLIT);
   add_rule_to_lexer(&l, SV("%{"), OPEN_MARKER);
   add_rule_to_lexer(&l, SV("%}"), CLOSE_MARKER);
   add_rule_to_lexer(&l, SV("=>"), BIG_ARROW);
+  add_rule_to_lexer(&l, SV("="), EQ);
   add_rule_to_lexer(&l, SV("{"), OPEN_BRA);
   add_rule_to_lexer(&l, SV("}"), CLOSE_BRA);
+  add_skip_rule_to_lexer(&l, SV("//*\n"));
   add_skip_rule_to_lexer(&l, SV(" "));
   add_skip_rule_to_lexer(&l, SV("\t"));
   add_skip_rule_to_lexer(&l, SV("\n"));
